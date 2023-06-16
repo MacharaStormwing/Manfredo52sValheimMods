@@ -9,8 +9,6 @@ namespace CustomizableCamera
     public class CustomizeableCameraBase
     {
 
-        CustomizeableCameraBase instance = null;
-
         // State changing
         public static bool characterStateChanged;
         public static bool characterControlledShip;

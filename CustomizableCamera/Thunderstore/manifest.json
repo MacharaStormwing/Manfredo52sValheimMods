@@ -1,0 +1,10 @@
+{
+    "name": "Customizable_Camera",
+    "version_number": "1.3.4",
+    "website_url": "https://github.com/MacharaStormwing/Manfredo52sValheimMods",
+    "author": "Manfredo52, MacharaStormwing",
+	"description": "Customizable_Camera - All credit goes to Manfredo52 - Gives you the freedom to change the FOV and camera position for various scenarios such as sailing or sneaking, along with some other settings you can mess around with!",
+    "dependencies": [
+        "denikson-BepInExPack_Valheim-5.4.2105"
+    ]
+}
