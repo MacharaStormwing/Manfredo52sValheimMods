@@ -3,10 +3,11 @@ using BepInEx.Configuration;
 using UnityEngine;
 using UnityEngine.UI;
 using HarmonyLib;
+using System.Runtime.Remoting.Channels;
 
 namespace CustomizableCamera
 {
-    [BepInPlugin("manfredo52.CustomizableCamera", "Customizable Camera Mod", "1.3.3")]
+    [BepInPlugin("manfredo52.CustomizableCamera", "Customizable Camera Mod", "1.3.4")]
     [BepInProcess("valheim.exe")]
     public class CustomizableCamera : BaseUnityPlugin
     {
@@ -107,7 +108,7 @@ namespace CustomizableCamera
         // Bow Zoom Interpolation Settings
         public static ConfigEntry<float> timeFOVDuration;
         public static ConfigEntry<float> timeBowZoomFOVDuration;
-        public static ConfigEntry<interpolationTypes> timeBowZoomInterpolationType;
+        public static ConfigEntry<CustomizeableCameraBase.interpolationTypes> timeBowZoomInterpolationType;
         public static ConfigEntry<float> timeCameraPosDuration;
 
         // Misc Camera Settings
@@ -140,44 +141,6 @@ namespace CustomizableCamera
         public static Vector3 lastSetPos;
         public static bool targetPosHasBeenReached;
 
-        // State changing
-        public static bool characterStateChanged;
-        public static bool characterControlledShip;
-        public static bool characterStoppedShipControl;
-        public static bool characterCrouched;
-        public static bool characterAiming;
-        public static bool characterSprinting;
-        public static bool characterWalking;
-        public static bool characterEquippedBow;
-
-        public static bool playerIsMoving;
-        public static bool playerInShelter;
-        public static bool playerInInterior;
-        public static bool isFirstPerson;
-        public static bool onSwappedShoulder;
-        public static bool canChangeCameraDistance;
-        
-        public static float cameraZoomSensitivityTemp = 10f;
-
-        public enum interpolationTypes
-        {
-            Linear,
-            SmoothStep
-        }
-
-        public enum characterState {
-            standing,
-            walking,
-            sprinting,
-            crouching,
-            sailing,
-            bowequipped,
-            bowaiming
-        };
-
-        public static characterState __characterState;
-        public static characterState __characterStatePrev;
-
         public void Awake()
         {
             // Main
@@ -205,7 +168,7 @@ namespace CustomizableCamera
             // Time Settings
             timeFOVDuration              = Config.Bind<float>("- Misc Time Values -", "timeFOVDuration", defaultTimeDuration, new ConfigDescription("How quickly the fov changes.", new AcceptableValueRange<float>(0.001f, 50f)));
             timeBowZoomFOVDuration       = Config.Bind<float>("- Misc Time Values -", "timeBowZoomFOVDuration", defaultBowZoomTimeDuration, new ConfigDescription("How quickly the bow zooms in.", new AcceptableValueRange<float>(0.001f, 50f)));
-            timeBowZoomInterpolationType = Config.Bind<interpolationTypes>("- Misc Time Values -", "timeBowZoomInterpolationType", interpolationTypes.Linear, new ConfigDescription("Interpolation method for the bow zoom."));
+            timeBowZoomInterpolationType = Config.Bind<CustomizeableCameraBase.interpolationTypes>("- Misc Time Values -", "timeBowZoomInterpolationType", CustomizeableCameraBase.interpolationTypes.Linear, new ConfigDescription("Interpolation method for the bow zoom."));
             timeCameraPosDuration        = Config.Bind<float>("- Misc Time Values -", "timeCameraPosDuration", defaultTimeDuration, new ConfigDescription("How quickly the camera moves to the new camera position", new AcceptableValueRange<float>(0.001f, 50f)));
 
             // Default
@@ -289,7 +252,7 @@ namespace CustomizableCamera
                 setMiscCameraSettings(__instance);
                 ___m_distance = cameraDistance.Value;
                 ___m_zoomSens = cameraZoomSensitivity.Value;
-                cameraZoomSensitivityTemp = cameraZoomSensitivity.Value;
+                CustomizeableCameraBase.cameraZoomSensitivityTemp = cameraZoomSensitivity.Value;
             }
         }
 

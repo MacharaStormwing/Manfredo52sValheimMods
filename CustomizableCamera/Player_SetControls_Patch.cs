@@ -4,16 +4,16 @@ using HarmonyLib;
 namespace CustomizableCamera
 {
     [HarmonyPatch(typeof(Player), "SetControls")]
-    public class Player_SetControls_Patch : CustomizableCamera
+    public class Player_SetControls_Patch : CustomizeableCameraBase
     {
         public static bool isPlayerAbleToCrouch;
 
         public static void Prefix(Player __instance, ref bool block, ref bool blockHold)
         {
-            if (!isEnabled.Value || !__instance)
+            if (!CustomizableCamera.isEnabled.Value || !__instance)
                 return;
 
-            ItemDrop.ItemData playerItemEquipped = __instance.GetLeftItem();
+            ItemDrop.ItemData playerItemEquipped = __instance.GetCurrentWeapon();
 
             if (playerItemEquipped != null && (playerItemEquipped.m_shared.m_itemType == ItemDrop.ItemData.ItemType.Bow))
                 characterEquippedBow = true;
@@ -21,19 +21,19 @@ namespace CustomizableCamera
                 characterEquippedBow = false;
 
             // Zoom in with the bow if enabled.
-            if (bowZoomEnabled.Value)
+            if (CustomizableCamera.bowZoomEnabled.Value)
             {
                 // Check to make sure if the user is drawing their bow.
                 if (__instance.InAttack() && characterEquippedBow) //__instance.IsHoldingAttack()
                 {
                     // Cancel draw key, auto zoom, toggle zoom, or hold zoom
-                    if (Input.GetKey(bowCancelDrawKey.Value.MainKey))
+                    if (Input.GetKey(CustomizableCamera.bowCancelDrawKey.Value.MainKey))
                     {
                         block = true;
                         blockHold = true;
                         characterAiming = false;
                     }
-                    else if (bowZoomOnDraw.Value)
+                    else if (CustomizableCamera.bowZoomOnDraw.Value)
                     {
                         characterAiming = true;
                     }
@@ -42,14 +42,14 @@ namespace CustomizableCamera
                         block = false;
                         blockHold = false;
                         
-                        if (bowZoomKeyToggle.Value)
+                        if (CustomizableCamera.bowZoomKeyToggle.Value)
                         {                       
-                            if (Input.GetKeyDown(bowZoomKey.Value.MainKey))
+                            if (Input.GetKeyDown(CustomizableCamera.bowZoomKey.Value.MainKey))
                                 characterAiming = !characterAiming;
                         }
                         else
                         {
-                            if (Input.GetKey(bowZoomKey.Value.MainKey))
+                            if (Input.GetKey(CustomizableCamera.bowZoomKey.Value.MainKey))
                                 characterAiming = true;
                             else
                                 characterAiming = false;
@@ -62,12 +62,12 @@ namespace CustomizableCamera
                 }
 
                 // Change sensitivity when zooming in with the bow if enabled.
-                if (bowZoomSensitivityEnabled.Value)
+                if (CustomizableCamera.bowZoomSensitivityEnabled.Value)
                 {
                     if (characterAiming)
-                        PlayerController.m_mouseSens = (playerMouseSensitivity * bowZoomSensitivity.Value);
+                        PlayerController.m_mouseSens = (CustomizableCamera.playerMouseSensitivity * CustomizableCamera.bowZoomSensitivity.Value);
                     else
-                        PlayerController.m_mouseSens = playerMouseSensitivity;
+                        PlayerController.m_mouseSens = CustomizableCamera.playerMouseSensitivity;
                 }
             }
         }

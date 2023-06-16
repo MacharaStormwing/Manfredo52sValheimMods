@@ -5,43 +5,43 @@ using HarmonyLib;
 namespace CustomizableCamera
 {
     [HarmonyPatch(typeof(GameCamera), "GetCameraPosition")]
-    public class GameCamera_GetCameraPosition_Patch : CustomizableCamera
+    public class GameCamera_GetCameraPosition_Patch : CustomizeableCameraBase
     {
         // Reimplement camera settings reset
         // Reset settings on settings save.
         private static void resetCameraSettings(GameCamera __instance)
         {
-            __instance.m_fov = defaultFOV;
-            __instance.m_3rdOffset = defaultPosition;
+            __instance.m_fov = CustomizableCamera.defaultFOV;
+            __instance.m_3rdOffset = CustomizableCamera.defaultPosition;
         }
 
         private static void moveToNewCameraPosition(GameCamera __instance, Vector3 targetVector, float time)
         {
-            __instance.m_3rdOffset = Vector3.Lerp(__instance.m_3rdOffset, targetVector, time / timeCameraPosDuration.Value);
-            lastSetPos = __instance.m_3rdOffset;
+            __instance.m_3rdOffset = Vector3.Lerp(__instance.m_3rdOffset, targetVector, time / CustomizableCamera.timeCameraPosDuration.Value);
+            CustomizableCamera.lastSetPos = __instance.m_3rdOffset;
         }
 
         private static void moveToNewCameraFOV(GameCamera __instance, float targetFOV, float time)
         {
-            __instance.m_fov = Mathf.Lerp(lastSetFOV, targetFOV, time / timeFOVDuration.Value);
-            lastSetFOV = __instance.m_fov;
+            __instance.m_fov = Mathf.Lerp(CustomizableCamera.lastSetFOV, targetFOV, time / CustomizableCamera.timeFOVDuration.Value);
+            CustomizableCamera.lastSetFOV = __instance.m_fov;
         }
 
         private static void moveToNewCameraFOVBowZoom(GameCamera __instance, float targetFOV, float time, interpolationTypes interpType)
         {
             if (interpType == interpolationTypes.SmoothStep)
-                __instance.m_fov = Mathf.SmoothStep(lastSetFOV, targetFOV, time / timeBowZoomFOVDuration.Value);
+                __instance.m_fov = Mathf.SmoothStep(CustomizableCamera.lastSetFOV, targetFOV, time / CustomizableCamera.timeBowZoomFOVDuration.Value);
             else
-                __instance.m_fov = Mathf.Lerp(lastSetFOV, targetFOV, time / timeBowZoomFOVDuration.Value);
+                __instance.m_fov = Mathf.Lerp(CustomizableCamera.lastSetFOV, targetFOV, time / CustomizableCamera.timeBowZoomFOVDuration.Value);
 
-            lastSetFOV = __instance.m_fov;
+            CustomizableCamera.lastSetFOV = __instance.m_fov;
         }
 
         private static bool checkBowZoomFOVLerpDuration(GameCamera __instance, float timeElapsed)
         {
-            if (lastSetFOV == targetFOV || timeElapsed >= timeFOVDuration.Value)
+            if (CustomizableCamera.lastSetFOV == CustomizableCamera.targetFOV || timeElapsed >= CustomizableCamera.timeFOVDuration.Value)
             {
-                __instance.m_fov = targetFOV;
+                __instance.m_fov = CustomizableCamera.targetFOV;
                 return true;
             }
             else
@@ -52,14 +52,14 @@ namespace CustomizableCamera
 
         private static bool checkFOVLerpDuration(GameCamera __instance, float timeElapsed)
         {
-            if (lastSetFOV == targetFOV)
+            if (CustomizableCamera.lastSetFOV == CustomizableCamera.targetFOV)
             {
-                __instance.m_fov = targetFOV;
+                __instance.m_fov = CustomizableCamera.targetFOV;
                 return true;
             }
-            else if (timeElapsed >= timeFOVDuration.Value)
+            else if (timeElapsed >= CustomizableCamera.timeFOVDuration.Value)
             {
-                timeFOV = 0;
+                CustomizableCamera.timeFOV = 0;
                 return true;
             }
             else
@@ -70,14 +70,14 @@ namespace CustomizableCamera
 
         private static bool checkCameraLerpDuration(GameCamera __instance, float timeElapsed)
         {
-            if (lastSetPos == targetPos)
+            if (CustomizableCamera.lastSetPos == CustomizableCamera.targetPos)
             {
-                __instance.m_3rdOffset = targetPos;
+                __instance.m_3rdOffset = CustomizableCamera.targetPos;
                 return true;
             }
-            else if (timeElapsed >= timeCameraPosDuration.Value)
+            else if (timeElapsed >= CustomizableCamera.timeCameraPosDuration.Value)
             {
-                timeCameraPos = 0;
+                CustomizableCamera.timeCameraPos = 0;
                 return true;
             }
             else
@@ -92,74 +92,74 @@ namespace CustomizableCamera
 
             if (isFirstPerson)
             {
-                if (characterAiming && bowZoomFirstPersonEnabled.Value)
+                if (characterAiming && CustomizableCamera.bowZoomFirstPersonEnabled.Value)
                 {
-                    targetFOV = cameraBowZoomFirstPersonFOV.Value;
+                    CustomizableCamera.targetFOV = CustomizableCamera.cameraBowZoomFirstPersonFOV.Value;
                     __characterState = characterState.bowaiming;
                 } 
                 else
                 {
-                    targetFOV = cameraFirstPersonFOV.Value;
+                    CustomizableCamera.targetFOV = CustomizableCamera.cameraFirstPersonFOV.Value;
                     __characterState = characterState.standing;
                 }
             }
-            else if (characterAiming && bowZoomEnabled.Value)
+            else if (characterAiming && CustomizableCamera.bowZoomEnabled.Value)
             {
-                targetFOV = cameraBowZoomFOV.Value;
-                if (characterEquippedBow && cameraBowSettingsEnabled.Value)
-                    targetPos = new Vector3(cameraBowX.Value, cameraBowY.Value, cameraBowZ.Value);
+                CustomizableCamera.targetFOV = CustomizableCamera.cameraBowZoomFOV.Value;
+                if (characterEquippedBow && CustomizableCamera.cameraBowSettingsEnabled.Value)
+                    CustomizableCamera.targetPos = new Vector3(CustomizableCamera.cameraBowX.Value, CustomizableCamera.cameraBowY.Value, CustomizableCamera.cameraBowZ.Value);
                 else
-                    targetPos = new Vector3(cameraX.Value, cameraY.Value, cameraZ.Value);
+                    CustomizableCamera.targetPos = new Vector3(CustomizableCamera.cameraX.Value, CustomizableCamera.cameraY.Value, CustomizableCamera.cameraZ.Value);
                 __characterState = characterState.bowaiming;
             }
             else if (characterControlledShip)
             {
-                targetFOV = cameraBoatFOV.Value;
-                targetPos = new Vector3(cameraBoatX.Value, cameraBoatY.Value, cameraBoatZ.Value);
+                CustomizableCamera.targetFOV = CustomizableCamera.cameraBoatFOV.Value;
+                CustomizableCamera.targetPos = new Vector3(CustomizableCamera.cameraBoatX.Value, CustomizableCamera.cameraBoatY.Value, CustomizableCamera.cameraBoatZ.Value);
                 __characterState = characterState.sailing;
             }
-            else if (characterEquippedBow && cameraBowSettingsEnabled.Value)
+            else if (characterEquippedBow && CustomizableCamera.cameraBowSettingsEnabled.Value)
             {
-                targetFOV = cameraFOV.Value;
-                targetPos = new Vector3(cameraBowX.Value, cameraBowY.Value, cameraBowZ.Value);
+                CustomizableCamera.targetFOV = CustomizableCamera.cameraFOV.Value;
+                CustomizableCamera.targetPos = new Vector3(CustomizableCamera.cameraBowX.Value, CustomizableCamera.cameraBowY.Value, CustomizableCamera.cameraBowZ.Value);
                 __characterState = characterState.bowequipped;
 
             }
             else if (characterSprinting)
             {
-                targetFOV = cameraSprintFOV.Value;
-                targetPos = new Vector3(cameraSprintX.Value, cameraSprintY.Value, cameraSprintZ.Value);
+                CustomizableCamera.targetFOV = CustomizableCamera.cameraSprintFOV.Value;
+                CustomizableCamera.targetPos = new Vector3(CustomizableCamera.cameraSprintX.Value, CustomizableCamera.cameraSprintY.Value, CustomizableCamera.cameraSprintZ.Value);
                 __characterState = characterState.sprinting;
             }
             else if (characterCrouched)
             {
-                targetFOV = cameraSneakFOV.Value;
-                targetPos = new Vector3(cameraSneakX.Value, cameraSneakY.Value, cameraSneakZ.Value);
+                CustomizableCamera.targetFOV = CustomizableCamera.cameraSneakFOV.Value;
+                CustomizableCamera.targetPos = new Vector3(CustomizableCamera.cameraSneakX.Value, CustomizableCamera.cameraSneakY.Value, CustomizableCamera.cameraSneakZ.Value);
                 __characterState = characterState.crouching;
             }
             else if (characterWalking)
             {
-                targetFOV = cameraWalkFOV.Value;
-                targetPos = new Vector3(cameraWalkX.Value, cameraWalkY.Value, cameraWalkZ.Value);
+                CustomizableCamera.targetFOV = CustomizableCamera.cameraWalkFOV.Value;
+                CustomizableCamera.targetPos = new Vector3(CustomizableCamera.cameraWalkX.Value, CustomizableCamera.cameraWalkY.Value, CustomizableCamera.cameraWalkZ.Value);
                 __characterState = characterState.walking;
             }
             else
             {
-                targetFOV = cameraFOV.Value;
-                targetPos = new Vector3(cameraX.Value, cameraY.Value, cameraZ.Value);
+                CustomizableCamera.targetFOV = CustomizableCamera.cameraFOV.Value;
+                CustomizableCamera.targetPos = new Vector3(CustomizableCamera.cameraX.Value, CustomizableCamera.cameraY.Value, CustomizableCamera.cameraZ.Value);
                 __characterState = characterState.standing;
             }
 
             // When the player swaps shoulder views.
-            float swappedShoulderX = targetPos.x * (float) -1.0;
-            if (Input.GetKeyDown(swapShoulderViewKey.Value.MainKey) && !isFirstPerson)
+            float swappedShoulderX = CustomizableCamera.targetPos.x * (float) -1.0;
+            if (Input.GetKeyDown(CustomizableCamera.swapShoulderViewKey.Value.MainKey) && !isFirstPerson)
             {
-                timeCameraPos = 0;
+                CustomizableCamera.timeCameraPos = 0;
                 onSwappedShoulder = !onSwappedShoulder;
             }
 
             if (onSwappedShoulder)
-                targetPos.x = swappedShoulderX;
+                CustomizableCamera.targetPos.x = swappedShoulderX;
 
             if (__characterState != __characterStatePrev)
             {
@@ -184,7 +184,7 @@ namespace CustomizableCamera
         {
             Player localPlayer = Player.m_localPlayer;
 
-            if (!isEnabled.Value || !__instance || !localPlayer)
+            if (!CustomizableCamera.isEnabled.Value || !__instance || !localPlayer)
                 return;
 
             isFirstPerson = checkIfFirstPerson(___m_distance);
@@ -192,23 +192,23 @@ namespace CustomizableCamera
 
             if (characterAiming)
             {
-                targetFOVHasBeenReached = checkBowZoomFOVLerpDuration(__instance, localPlayer.GetAttackDrawPercentage());
+                CustomizableCamera.targetFOVHasBeenReached = checkBowZoomFOVLerpDuration(__instance, localPlayer.GetAttackDrawPercentage());
 
-                if (!targetFOVHasBeenReached)
-                    moveToNewCameraFOVBowZoom(__instance, targetFOV, localPlayer.GetAttackDrawPercentage(), timeBowZoomInterpolationType.Value);
+                if (!CustomizableCamera.targetFOVHasBeenReached)
+                    moveToNewCameraFOVBowZoom(__instance, CustomizableCamera.targetFOV, localPlayer.GetAttackDrawPercentage(), CustomizableCamera.timeBowZoomInterpolationType.Value);
             }
             else
             {
-                targetFOVHasBeenReached = checkFOVLerpDuration(__instance, timeFOV);
+                CustomizableCamera.targetFOVHasBeenReached = checkFOVLerpDuration(__instance, CustomizableCamera.timeFOV);
 
-                if (!targetFOVHasBeenReached)
+                if (!CustomizableCamera.targetFOVHasBeenReached)
                 {
                     if (characterStateChanged)
-                        timeFOV = 0;
+                        CustomizableCamera.timeFOV = 0;
                     else
-                        timeFOV += Time.deltaTime;
+                        CustomizableCamera.timeFOV += Time.deltaTime;
 
-                    moveToNewCameraFOV(__instance, targetFOV, timeFOV);
+                    moveToNewCameraFOV(__instance, CustomizableCamera.targetFOV, CustomizableCamera.timeFOV);
                 }
             }
 
@@ -216,19 +216,19 @@ namespace CustomizableCamera
             if (isFirstPerson)
                 return;
 
-            if (cameraLockedBoatYEnabled.Value && characterControlledShip)
-                pos.y = cameraLockedBoatY.Value;
+            if (CustomizableCamera.cameraLockedBoatYEnabled.Value && characterControlledShip)
+                pos.y = CustomizableCamera.cameraLockedBoatY.Value;
 
-            targetPosHasBeenReached = checkCameraLerpDuration(__instance, timeCameraPos);
+            CustomizableCamera.targetPosHasBeenReached = checkCameraLerpDuration(__instance, CustomizableCamera.timeCameraPos);
 
-            if (!targetPosHasBeenReached)
+            if (!CustomizableCamera.targetPosHasBeenReached)
             {
                 if (characterStateChanged)
-                    timeCameraPos = 0;
+                    CustomizableCamera.timeCameraPos = 0;
                 else
-                    timeCameraPos += Time.deltaTime;
+                    CustomizableCamera.timeCameraPos += Time.deltaTime;
 
-                moveToNewCameraPosition(__instance, targetPos, timeCameraPos);
+                moveToNewCameraPosition(__instance, CustomizableCamera.targetPos, CustomizableCamera.timeCameraPos);
             }
         }
     }
